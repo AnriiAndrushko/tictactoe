@@ -46,6 +46,8 @@ function winChecker(whatToCheck) {
         GameOver = true;
         undoBtn.disabled = true;
         redoBtn.disabled = true;
+        localStorage.setItem('copyMemory', null);
+        localStorage.setItem('objMemory', null);
         return;
       }
     }
@@ -77,6 +79,8 @@ function winChecker(whatToCheck) {
         GameOver = true;
         undoBtn.disabled = true;
         redoBtn.disabled = true;
+        localStorage.setItem('copyMemory', null);
+        localStorage.setItem('objMemory', null);
         return;
       }
     }
@@ -104,6 +108,8 @@ function winChecker(whatToCheck) {
       GameOver = true;
       undoBtn.disabled = true;
       redoBtn.disabled = true;
+      localStorage.setItem('copyMemory', null);
+      localStorage.setItem('objMemory', null);
       return;
     }
   }
@@ -129,6 +135,8 @@ function winChecker(whatToCheck) {
       GameOver = true;
       undoBtn.disabled = true;
       redoBtn.disabled = true;
+      localStorage.setItem('copyMemory', null);
+      localStorage.setItem('objMemory', null);
       wonMessage.classList.remove('hidden');
       return;
     }
@@ -137,12 +145,14 @@ function winChecker(whatToCheck) {
     GameOver = true;
     undoBtn.disabled = true;
     redoBtn.disabled = true;
+    localStorage.setItem('copyMemory', null);
+    localStorage.setItem('objMemory', null);
     wonMessage.classList.remove('hidden');
     wonMessageWho.textContent = "It's a draw!";
   }
 }
 
-function Hod(target, komyHod, memoryObj, tip) {
+function Hod(target, komyHod, memoryObj, tip, undoOrReal) {
   // console.log(NomerHoda);
   const returningOBJ = memoryObj;
   if (!GameOver) {
@@ -162,33 +172,42 @@ function Hod(target, komyHod, memoryObj, tip) {
     winChecker(komyHod);
     localStorage.setItem('objMemory', JSON.stringify(returningOBJ));
     localStorage.setItem('NomerHoda', JSON.stringify(NomerHoda));
+
+    if (undoOrReal) {
+      localStorage.setItem('copyMemory', JSON.stringify(returningOBJ));
+    }
+
     target.classList.add(tip);
   }
   return returningOBJ;
 }
 
 function Redo() {
-  if (hadUndo) {
-    for (let i = 0; i < ROWS_COUNT; i += 1) {
-      for (let b = 0; b < COLS_COUNT; b += 1) {
-        if (memory[`stroka${i + 1}`][b] === NomerHoda) {
-          if ((NomerHoda + 1) % 2 === 0) {
-            const target = document.getElementById(`c-${i * ROWS_COUNT + b}`);
-            copyMemory = Hod(target, 1, copyMemory, 'r');
-          } else {
-            const target = document.getElementById(`c-${i * ROWS_COUNT + b}`);
-            copyMemory = Hod(target, 0, copyMemory, 'ch');
-          }
-          if (NomerHoda % 2) {
-            KtoHodit = 0;
-          } else {
-            KtoHodit = 1;
-          }
-          if (maxHod === NomerHoda) {
-            redoBtn.disabled = true;
-          }
-          return;
+  memory = JSON.parse(localStorage.getItem('copyMemory'));
+
+  copyMemory = JSON.parse(localStorage.getItem('objMemory'));
+
+  // console.log(copyMemory);
+
+  for (let i = 0; i < ROWS_COUNT; i += 1) {
+    for (let b = 0; b < COLS_COUNT; b += 1) {
+      if (memory[`stroka${i + 1}`][b] === NomerHoda) {
+        if ((NomerHoda + 1) % 2 === 0) {
+          const target = document.getElementById(`c-${i * ROWS_COUNT + b}`);
+          copyMemory = Hod(target, 1, copyMemory, 'r', false);
+        } else {
+          const target = document.getElementById(`c-${i * ROWS_COUNT + b}`);
+          copyMemory = Hod(target, 0, copyMemory, 'ch', false);
         }
+        if (NomerHoda % 2) {
+          KtoHodit = 0;
+        } else {
+          KtoHodit = 1;
+        }
+        if (maxHod === NomerHoda) {
+          redoBtn.disabled = true;
+        }
+        return;
       }
     }
   }
@@ -197,6 +216,9 @@ function Redo() {
 function Undo() {
   if (!hadUndo) {
     copyMemory = JSON.parse(JSON.stringify(memory));
+
+    localStorage.setItem('copyMemory', JSON.stringify(copyMemory));
+
     maxHod = NomerHoda;
     localStorage.setItem('maxHod', JSON.stringify(maxHod));
     redoBtn.disabled = false;
@@ -254,9 +276,12 @@ function OnStart() {
     if (NomerHoda === 0) {
       undoBtn.disabled = true;
       redoBtn.disabled = true;
+      if (NomerHoda < maxHod) {
+        redoBtn.disabled = false;
+      }
     } else {
       undoBtn.disabled = false;
-      if (hadUndo) {
+      if (NomerHoda < maxHod) {
         redoBtn.disabled = false;
       }
     }
@@ -317,14 +342,14 @@ function CreateGameElement(event) {
         hadUndo = false;
       }
 
-      memory = Hod(event.currentTarget, 0, memory, 'ch');
+      memory = Hod(event.currentTarget, 0, memory, 'ch', true);
       redoBtn.disabled = true;
     } else {
       if (hadUndo) {
         memory = JSON.parse(JSON.stringify(copyMemory));
         hadUndo = false;
       }
-      memory = Hod(event.currentTarget, 1, memory, 'r');
+      memory = Hod(event.currentTarget, 1, memory, 'r', true);
       redoBtn.disabled = true;
     }
   }
