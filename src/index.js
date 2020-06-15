@@ -303,10 +303,16 @@ function OnStart() {
     winChecker(1);
   } else {
     memory = writeFieldToObj(COLS_COUNT, ROWS_COUNT, memory);
+    copyMemory = writeFieldToObj(COLS_COUNT, ROWS_COUNT, memory);
+    localStorage.setItem('objMemory', JSON.stringify(memory));
+    localStorage.setItem('copyMemory', JSON.stringify(memory));
   }
 }
 function Restart() {
   memory = writeFieldToObj(COLS_COUNT, ROWS_COUNT, memory);
+  copyMemory = writeFieldToObj(COLS_COUNT, ROWS_COUNT, memory);
+  localStorage.setItem('objMemory', JSON.stringify(memory));
+  localStorage.setItem('copyMemory', JSON.stringify(memory));
 
   for (let i = 0; i < ROWS_COUNT; i += 1) {
     for (let b = 0; b < COLS_COUNT; b += 1) {
@@ -320,6 +326,8 @@ function Restart() {
       target.classList.remove('diagonal-right');
     }
   }
+  maxHod = 0;
+  localStorage.setItem('maxHod', JSON.stringify(memory));
   wonMessageWho.textContent = '';
   wonMessage.classList.add('hidden');
   GameOver = false;
